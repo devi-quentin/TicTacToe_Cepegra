@@ -42,7 +42,7 @@ $cells.forEach(c => c.addEventListener('click', e => playerClick(e.target), {onc
 // Ecoute du bouton 'nouvelle partie'
 $restartButton.addEventListener('click', () => nouvellePartie())
 
-// (1) Lancement d'une partie. Executée après l'envoi du formulaire ou quand une partie est terminée.
+// (0) Lancement d'une partie. Executée après l'envoi du formulaire ou quand une partie est terminée.
 const nouvellePartie = () => {
     cellulesRestantes = 9 // Cellules libres restantes
     currentPlayer = rand(1, 2) // Tirage du premier joueur (random)
@@ -62,7 +62,7 @@ const nouvellePartie = () => {
     nextRound() // On passe au round 1
 }
 
-// (2) Quand un joueur clique sur une case
+// (1) Quand un joueur clique sur une case
 const playerClick = (cellTarget) => {
     // Empeche le double execution de cette fonction (bug que j'ai eu)
     if (cellTarget.classList.contains("x") || cellTarget.classList.contains("circle")) return
@@ -86,7 +86,7 @@ const playerClick = (cellTarget) => {
     nextRound() // Passage au round suivant
 }
 
-// (3a) Vérification si partie gagnée
+// (2a) Vérification si partie gagnée
 const verifyWin = () => {
     // On vérifie chaque axe. Si l'un est gagnant => ecran de fin
     // HORIZONTAL
@@ -107,8 +107,7 @@ const verifyWin = () => {
     else {}
 }
 
-// (3b) Ecran de fin de partie si partie terminée
-// 'typeEcran' changera le comportement de la fonction
+// (2b) Ecran de fin de partie si partie terminée
 const screenEndGame = (typeEcran) => {
     let text = (typeEcran === "win") ? `${players[currentPlayer-1].nom} gagne !` : `Match nul !`
     $winningMessage.classList.toggle("show")
@@ -118,7 +117,7 @@ const screenEndGame = (typeEcran) => {
     if (typeEcran === "win") players[currentPlayer-1].score++
 }
 
-// (4) Passage au round suivant
+// (3) Passage au round suivant, puis attente du clique d'un joueur pour l'étape (1)
 const nextRound = () => {
     // Changement du joueur
     currentPlayer = (currentPlayer === 1) ? 2 : 1
