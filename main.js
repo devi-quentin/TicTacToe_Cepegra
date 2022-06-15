@@ -42,8 +42,27 @@ $cells.forEach(c => c.addEventListener('click', e => playerClick(e.target), {onc
 // Ecoute du bouton 'nouvelle partie'
 $restartButton.addEventListener('click', () => nouvellePartie())
 
+// (1) Lancement d'une partie. Executée après l'envoi du formulaire ou quand une partie est terminée.
+const nouvellePartie = () => {
+    cellulesRestantes = 9 // Cellules libres restantes
+    currentPlayer = rand(1, 2) // Tirage du premier joueur (random)
 
-// Quand un joueur clique sur une case
+    // Reset des class des cellules
+    $cells.forEach(c => {
+        c.classList.remove("x")
+        c.classList.remove("circle")
+    })
+
+    // On ré-écoute les cellules (a chaque nouvelle partie pour réinitialiser le "once:true")
+    $cells.forEach(c => c.addEventListener('click', (e) => playerClick(e.target), {once:true}))
+
+    // Masque l'ecran de fin de partie
+    $winningMessage.classList.remove("show")
+
+    nextRound() // On passe au round 1
+}
+
+// (2) Quand un joueur clique sur une case
 const playerClick = (cellTarget) => {
     // Empeche le double execution de cette fonction (bug que j'ai eu)
     if (cellTarget.classList.contains("x") || cellTarget.classList.contains("circle")) return
@@ -67,29 +86,7 @@ const playerClick = (cellTarget) => {
     nextRound() // Passage au round suivant
 }
 
-// Passage au round suivant
-const nextRound = () => {
-    // Changement du joueur
-    currentPlayer = (currentPlayer === 1) ? 2 : 1
-
-    // Génération du texte dans l'HTML (joueurs actuel, score)
-    $textZone.innerHTML = `
-        Au tour de <strong>${players[currentPlayer-1].nom}</strong><br>
-        ${players[0].nom} : ${players[0].score} point(s)<br>
-        ${players[1].nom} : ${players[1].score} point(s)`
-    
-    // Changement du symbole HOVER
-    if (getCurrentSymbole() === "x") {
-        $board.classList.add("x")
-        $board.classList.remove("circle")
-    }
-    else {
-        $board.classList.remove("x")
-        $board.classList.add("circle")
-    }
-}
-
-// Vérification si partie gagnée
+// (3a) Vérification si partie gagnée
 const verifyWin = () => {
     // On vérifie chaque axe. Si l'un est gagnant => ecran de fin
     // HORIZONTAL
@@ -110,7 +107,7 @@ const verifyWin = () => {
     else {}
 }
 
-// Ecran de fin de partie
+// (3b) Ecran de fin de partie si partie terminée
 // 'typeEcran' changera le comportement de la fonction
 const screenEndGame = (typeEcran) => {
     let text = (typeEcran === "win") ? `${players[currentPlayer-1].nom} gagne !` : `Match nul !`
@@ -121,24 +118,26 @@ const screenEndGame = (typeEcran) => {
     if (typeEcran === "win") players[currentPlayer-1].score++
 }
 
-// Lancement d'une partie. Executée après l'envoi du formulaire ou quand une partie est terminée.
-const nouvellePartie = () => {
-    cellulesRestantes = 9 // Cellules libres restantes
-    currentPlayer = rand(1, 2) // Tirage du premier joueur (random)
+// (4) Passage au round suivant
+const nextRound = () => {
+    // Changement du joueur
+    currentPlayer = (currentPlayer === 1) ? 2 : 1
 
-    // Reset des class des cellules
-    $cells.forEach(c => {
-        c.classList.remove("x")
-        c.classList.remove("circle")
-    })
-
-    // On ré-écoute les cellules (a chaque nouvelle partie pour réinitialiser le "once:true")
-    $cells.forEach(c => c.addEventListener('click', (e) => playerClick(e.target), {once:true}))
-
-    // Masque l'ecran de fin de partie
-    $winningMessage.classList.remove("show")
-
-    nextRound() // On passe au round 1
+    // Génération du texte dans l'HTML (joueurs actuel, score)
+    $textZone.innerHTML = `
+        Au tour de <strong>${players[currentPlayer-1].nom}</strong><br>
+        ${players[0].nom} : ${players[0].score} point(s)<br>
+        ${players[1].nom} : ${players[1].score} point(s)`
+    
+    // Changement du symbole HOVER
+    if (getCurrentSymbole() === "x") {
+        $board.classList.add("x")
+        $board.classList.remove("circle")
+    }
+    else {
+        $board.classList.remove("x")
+        $board.classList.add("circle")
+    }
 }
 
 // Retourne le symbole du joueur actuel
