@@ -1,124 +1,148 @@
-let $cells, freeCellsLeft, round, currentPlayer
-let cells = []
-let symboles = ["x", "circle"]
+let cellulesRestantes // Nombre de cellules restantes (pour vérifier si match nul)
+let currentPlayer // Joueur actuel. Utilisé pour connaitre son nom, symbole et score
+let cellsPlayed = [] // Utilisé pour tester les conditions de victoires ["x", "circle", "", "", ...]
+// Noms, symboles et socres des joueurs
+let players = [
+    {nom: "", symbole: "x", score: 0},
+    {nom: "", symbole: "circle", score: 0},
+]
 
+// ---------
+// SELECTORS
+// ---------
+const $cells = document.querySelectorAll(".cell")
 const $board = document.querySelector("#board")
 const $winningMessage = document.querySelector("#winningMessage")
 const $winningMessageText = document.querySelector("#winningMessageText")
 const $restartButton = document.querySelector("#restartButton")
+const $formPopup = document.querySelector(".form_popup")
+const $formPseudo = document.querySelector("#formPseudo")
+const $textZone = document.querySelector("#textZone")
 
-// Ecoute du bouton
-$restartButton.addEventListener('click', () => newGame())
+// ---------
+// LISTENERS
+// ---------
+// Ecoute du formulaire. A la soumisson, on récupère les pseudos et on lance la partie
+$formPseudo.addEventListener('submit', e => {
+    // On désactive le comportement par defaut
+    e.preventDefault() 
 
-// Ecoute de chaque cellule. Cliquable qu'une seul fois
-const addListenerToCells = () => {
-    $cells = document.querySelectorAll(".cell")
-    $cells.forEach(cell => {
-        cell.addEventListener('click', (e) => playerPlay(e.target), {once:true})
-    });
-}
+    // Si pseudo vide, on remplace par "Anonymous"
+    players[0].nom = (e.target[0].value === "") ? "Anonymous" : e.target[0].value
+    players[1].nom = (e.target[1].value === "") ? "Anonymous" : e.target[1].value
+
+    // On masque le formulaire
+    $formPopup.classList.remove("show")
+
+    // On lance la partie
+    nouvellePartie()
+})
+// Ecoute des cellules. Au clique, on execute la fonction playerClick
+$cells.forEach(c => c.addEventListener('click', e => playerClick(e.target), {once:true}))
+// Ecoute du bouton 'nouvelle partie'
+$restartButton.addEventListener('click', () => nouvellePartie())
+
 
 // Quand un joueur clique sur une case
-const playerPlay = (cellTarget) => {
+const playerClick = (cellTarget) => {
     // Empeche le double execution de cette fonction (bug que j'ai eu)
     if (cellTarget.classList.contains("x") || cellTarget.classList.contains("circle")) return
     
-    cellTarget.classList.toggle(symbole()) // On attribue la class à la case
-    freeCellsLeft-- // On enlève 1 au reste des cases
-    constructCellsArray() // Construction Array des symboles
+    // On attribue la class à la cellule
+    cellTarget.classList.toggle(players[currentPlayer-1].symbole)
+
+    // On enlève 1 aux cellules retantes
+    cellulesRestantes-- 
+    
+    // On génère un array de chaque symbole joué
+    // Cet array sert aux tests des conditions de victoire
+    cellsPlayed = []
+    $cells.forEach(cell => {
+        if (cell.classList.contains("x")) cellsPlayed.push("x")
+        else if (cell.classList.contains("circle")) cellsPlayed.push("circle")
+        else cellsPlayed.push("")
+    })
+
     verifyWin() // Vérification si partie gagnée
     nextRound() // Passage au round suivant
 }
 
-// On construit l'array des symboles
-const constructCellsArray = () => {
-    cells = [] // On vide le tableau
-
-    // On ajoute chaque symbole dans l'array en fonction des classes
-    $cells.forEach(cell => {
-        if (cell.classList.contains("x")) cells.push("x")
-        else if (cell.classList.contains("circle")) cells.push("circle")
-        else cells.push("")
-    })
-}
-
 // Passage au round suivant
 const nextRound = () => {
-    round++ // Nouveau round    
-    currentPlayer = (currentPlayer === 1) ? 2 : 1 // Changement de joueur
-    setSymboleHover() // Changement du symboles en hover
-}
+    // Changement du joueur
+    currentPlayer = (currentPlayer === 1) ? 2 : 1
 
-// Changement du symboles en hover
-const setSymboleHover = () => {
-    if (symbole() === symboles[0]) {
-        $board.classList.add(symboles[0])
-        $board.classList.remove(symboles[1])
+    // Génération du texte dans l'HTML (joueurs actuel, score)
+    $textZone.innerHTML = `
+        Au tour de <strong>${players[currentPlayer-1].nom}</strong><br>
+        ${players[0].nom} : ${players[0].score} point(s)<br>
+        ${players[1].nom} : ${players[1].score} point(s)`
+    
+    // Changement du symbole HOVER
+    if (getCurrentSymbole() === "x") {
+        $board.classList.add("x")
+        $board.classList.remove("circle")
     }
     else {
-        $board.classList.remove(symboles[0])
-        $board.classList.add(symboles[1])
+        $board.classList.remove("x")
+        $board.classList.add("circle")
     }
 }
 
 // Vérification si partie gagnée
 const verifyWin = () => {
-    // Si match nul, on affiche endGame et on stop la vérification de win
-    if (freeCellsLeft === 0) {
-        endGame("nul")
-        return
-    }
-    // On vérifie chaque axe. Si l'un est gagnant => endGame
+    // On vérifie chaque axe. Si l'un est gagnant => ecran de fin
     // HORIZONTAL
-    if (cells[0] === symbole() && cells[1] === symbole() && cells[2] === symbole()) endGame("win")
-    if (cells[3] === symbole() && cells[4] === symbole() && cells[5] === symbole()) endGame("win")
-    if (cells[6] === symbole() && cells[7] === symbole() && cells[8] === symbole()) endGame("win")
+    if (cellsPlayed[0] === getCurrentSymbole() && cellsPlayed[1] === getCurrentSymbole() && cellsPlayed[2] === getCurrentSymbole()) screenEndGame("win")
+    else if (cellsPlayed[3] === getCurrentSymbole() && cellsPlayed[4] === getCurrentSymbole() && cellsPlayed[5] === getCurrentSymbole()) screenEndGame("win")
+    else if (cellsPlayed[6] === getCurrentSymbole() && cellsPlayed[7] === getCurrentSymbole() && cellsPlayed[8] === getCurrentSymbole()) screenEndGame("win")
     // VERTICAL
-    if (cells[0] === symbole() && cells[3] === symbole() && cells[6] === symbole()) endGame("win")
-    if (cells[1] === symbole() && cells[4] === symbole() && cells[7] === symbole()) endGame("win")
-    if (cells[2] === symbole() && cells[5] === symbole() && cells[8] === symbole()) endGame("win")
+    else if (cellsPlayed[0] === getCurrentSymbole() && cellsPlayed[3] === getCurrentSymbole() && cellsPlayed[6] === getCurrentSymbole()) screenEndGame("win")
+    else if (cellsPlayed[1] === getCurrentSymbole() && cellsPlayed[4] === getCurrentSymbole() && cellsPlayed[7] === getCurrentSymbole()) screenEndGame("win")
+    else if (cellsPlayed[2] === getCurrentSymbole() && cellsPlayed[5] === getCurrentSymbole() && cellsPlayed[8] === getCurrentSymbole()) screenEndGame("win")
     // OBLIQUE
-    if (cells[0] === symbole() && cells[4] === symbole() && cells[8] === symbole()) endGame("win")
-    if (cells[2] === symbole() && cells[4] === symbole() && cells[6] === symbole()) endGame("win")
+    else if (cellsPlayed[0] === getCurrentSymbole() && cellsPlayed[4] === getCurrentSymbole() && cellsPlayed[8] === getCurrentSymbole()) screenEndGame("win")
+    else if (cellsPlayed[2] === getCurrentSymbole() && cellsPlayed[4] === getCurrentSymbole() && cellsPlayed[6] === getCurrentSymbole()) screenEndGame("win")
+    // Si match nul et que la partie n'est pas terminée
+    else if (cellulesRestantes === 0) {
+        screenEndGame("nul")
+    }
+    else {}
 }
 
 // Ecran de fin de partie
-const endGame = (t) => {
-    let text = (t === "win") ? `Joueur "${symbole()}" gagne !` : `Match nul !`
+// 'typeEcran' changera le comportement de la fonction
+const screenEndGame = (typeEcran) => {
+    let text = (typeEcran === "win") ? `${players[currentPlayer-1].nom} gagne !` : `Match nul !`
     $winningMessage.classList.toggle("show")
     $winningMessageText.innerHTML = text
+
+    // On ajoute 1 point au joueur gagnant
+    if (typeEcran === "win") players[currentPlayer-1].score++
 }
 
-// Lorsqu'on recommence une partie
-const newGame = () => {
-    // Reset des class
-    $cells.forEach(cell => {
-        cell.classList.remove("x")
-        cell.classList.remove("circle")
+// Lancement d'une partie. Executée après l'envoi du formulaire ou quand une partie est terminée.
+const nouvellePartie = () => {
+    cellulesRestantes = 9 // Cellules libres restantes
+    currentPlayer = rand(1, 2) // Tirage du premier joueur (random)
+
+    // Reset des class des cellules
+    $cells.forEach(c => {
+        c.classList.remove("x")
+        c.classList.remove("circle")
     })
+
+    // On ré-écoute les cellules (a chaque nouvelle partie pour réinitialiser le "once:true")
+    $cells.forEach(c => c.addEventListener('click', (e) => playerClick(e.target), {once:true}))
 
     // Masque l'ecran de fin de partie
     $winningMessage.classList.remove("show")
 
-    // Initiation de la partie
-    init()
+    nextRound() // On passe au round 1
 }
 
 // Retourne le symbole du joueur actuel
-const symbole = () => symboles[currentPlayer-1]
-
-// Premiere fonction executée
-const init = () => {
-    addListenerToCells() // On écoute les cellules pour les rendre cliquables
-    constructCellsArray() // Construction de l'array des symboles
-    freeCellsLeft = 9 // Cellules libres  restantes
-    round = 0    
-    currentPlayer = rand(1, 2) // Tirage du premier joueur (random)
-
-    nextRound()
-}
+const getCurrentSymbole = () => players[currentPlayer-1].symbole
 
 // Tire au sort un nombre entre min et max
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1) ) + min
-
-init()

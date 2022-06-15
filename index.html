@@ -1,29 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
- <meta charset="UTF-8">
- <meta http-equiv="X-UA-Compatible" content="IE=edge">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="stylesheet" href="style.css">
- <title>Tic-Tac-Toe - Cepegra</title>
- <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="board" id="board">
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-           <div class="cell" data-cell></div>
-       </div>
-       <div class="winning-message" id="winningMessage">
-           <div id="winningMessageText"></div>
-           <button id="restartButton">Nouvelle partie</button>
-       </div>
-       <script src="main.js"></script>
-   </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+        <title>Tic-Tac-Toe - Cepegra</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="text_zone" id="textZone"></div>
+        <div class="board" id="board">
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+        </div>
+        <div class="winning-message" id="winningMessage">
+            <div id="winningMessageText"></div>
+            <button id="restartButton">Nouvelle partie</button>
+        </div>
+        <div class="form_popup show">
+            <form action="#" id="formPseudo">
+                <div>
+                    <label for="pseudo1">Pseudo 1</label>
+                    <input type="text" name="pseudo1" id="pseudo1">
+                </div>
+                <div>
+                    <label for="pseudo2">Pseudo 2</label>
+                    <input type="text" name="pseudo2" id="pseudo2">
+                </div>
+                <button type="submit">Jouer</button>
+            </form>
+        </div>
+        <script src="main.js"></script>
+    </body>
 </html>
